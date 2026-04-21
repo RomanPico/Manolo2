@@ -1,0 +1,215 @@
+[build-system]
+requires = ["uv_build>=0.9.6,<0.10.0"]
+build-backend = "uv_build"
+
+[project]
+name = "manolo"
+version = "0.1.0"
+description = "AI Helper app with FastAPI orchestrator and pluggable LLM providers"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "aiosqlite==0.20.0",
+    "fastapi==0.115.6",
+    "httpx==0.28.1",
+    "jsonschema==4.23.0",
+    "pydantic==2.12.5",
+    "pydantic-settings==2.12.0",
+    "python-dateutil==2.9.0.post0",
+    "sse-starlette==2.2.1",
+    "uvicorn[standard]==0.34.0",
+]
+
+[tool.uv]
+package = false
+prerelease = "allow"
+
+[tool.uv.build-backend]
+module-root = "."
+default-groups = ["dev", "test"]
+
+[dependency-groups]
+build = ["wheel-inspect==1.7.1"]
+dev = [
+    "ipykernel==7.1.0",
+    "poethepoet==0.37.0",
+    "uv==0.5.14",
+]
+lint = [
+    "pre-commit-uv==4.1.4",
+    "pre-commit==4.1.0",
+    "prek==0.2.15",
+]
+test = [
+    "coverage==7.6.10",
+    "polyfactory==2.18.1",
+    "pytest-asyncio==0.25.2",
+    "pytest-cov==6.0.0",
+    "pytest-dotenv==0.5.2",
+    "pytest-env==1.1.5",
+    "pytest-recording==0.13.2",
+    "pytest==8.3.4",
+    "respx==0.22.0",
+    "syrupy==4.8.0",
+]
+versioning = ["python-semantic-release==10.5.3"]
+
+[tool.poe.tasks]
+build = "uv build"
+main = "uv run --no-sync --group dev python -m manolo"
+test = "uv run --no-sync --group test pytest ./tests"
+test_cov = "uv run --no-sync --group test pytest ./tests --cov=manolo --cov-report=term-missing"
+test_not_integration = "uv run --no-sync --group test pytest -k 'not integration' ./tests"
+format = "uv run --no-sync --group lint pre-commit run --all-files --verbose"
+format-files = "uv run --no-sync --group lint prek run --verbose ruff-format ruff-check pylint mypy"
+export = "uv export --locked --format requirements-txt -o requirements.txt"
+coverage = "uv run --no-sync --group test coverage report"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+pythonpath = ["."]
+addopts = [
+    "-ra",
+    "--disable-warnings",
+]
+testpaths = ["tests"]
+python_classes = "!Test"
+markers = [
+    "vcr: cassette recording of http requests",
+    "regression: reflect bugs and/or defects fixed",
+    "asyncio: marks tests as async",
+    "integration: integration tests requiring live services",
+]
+
+[tool.pytest_env]
+DATABASE_PATH = { value = ":memory:", skip_if_set = true }
+LLM_PROVIDER = { value = "openai", skip_if_set = true }
+OPENAI_API_KEY = { value = "test-key", skip_if_set = true }
+OPENAI_BASE_URL = { value = "https://api.openai.com/v1", skip_if_set = true }
+LLAMA_CPP_BASE_URL = { value = "http://127.0.0.1:8080/v1", skip_if_set = true }
+LLM_MODEL = { value = "gpt-4o-mini", skip_if_set = true }
+FX_API_URL = { value = "https://open.er-api.com/v6/latest/USD", skip_if_set = true }
+
+[tool.coverage.run]
+relative_files = true
+omit = [
+    "manolo/__main__.py",
+    "manolo/settings.py",
+    "manolo/server/app.py",
+    "manolo/server/lifecycle.py",
+    "manolo/server/static/*",
+    "manolo/server/routers/*",
+]
+
+[tool.coverage.report]
+exclude_lines = ["assert_never", "if TYPE_CHECKING:"]
+exclude_also = ["pragma: no cover", "@overload", "Protocol", "@pytest.mark.xfail"]
+
+[tool.coverage.paths]
+source = ["manolo", "*/manolo"]
+
+[tool.ruff]
+fix = true
+preview = true
+target-version = "py311"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.ruff.lint]
+select = [
+    "E", "UP", "B", "A", "C4", "SIM", "I", "T20", "EM", "PT", "RET", "TRY",
+    "PERF", "FURB", "ERA", "ARG", "FBT", "BLE", "COM", "ICN", "PIE", "RSE",
+    "SLF", "TID", "PTH", "LOG", "G", "ISC", "TD", "FIX", "RUF", "F",
+]
+ignore = [
+    "SIM117",
+    "ISC001",
+    "COM812",
+    "E203",
+    "TD002",
+    "TD003",
+    "SLF001",
+    "PT001",
+    "FIX002",
+]
+
+[tool.pylint.main]
+fail-on = ["I"]
+fail-under = 10.0
+jobs = 4
+py-version = "3.11"
+
+[tool.pylint.design]
+max-args = 7
+max-attributes = 12
+max-bool-expr = 5
+max-branches = 12
+max-complexity = 12
+max-locals = 15
+max-parents = 7
+max-public-methods = 20
+max-returns = 8
+max-statements = 50
+
+[tool.pylint.format]
+max-line-length = 120
+max-module-lines = 400
+
+[tool.pylint.basic]
+argument-naming-style = "snake_case"
+function-naming-style = "snake_case"
+variable-naming-style = "snake_case"
+class-naming-style = "PascalCase"
+const-naming-style = "UPPER_CASE"
+module-naming-style = "snake_case"
+
+[tool.pylint."messages control"]
+disable = [
+    "redefined-outer-name",
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "import-error",
+    "invalid-name",
+    "logging-fstring-interpolation",
+    "unused-import",
+    "too-few-public-methods",
+    "missing-kwoa",
+    "no-self-use",
+    "duplicate-code",
+    "protected-access",
+]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+ignore_missing_imports = true
+plugins = ["pydantic.mypy"]
+
+[tool.bandit]
+exclude_dirs = ["tests"]
+
+[tool.semantic_release]
+commit_message = "chore(release): bump version and update changelog [skip ci]"
+version_source = "tag"
+tag_format = "{version}"
+version_toml = ["pyproject.toml:project.version"]
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = ["chore", "feat", "fix"]
+minor_tags = ["feat"]
+patch_tags = ["fix"]
+
+[tool.semantic_release.changelog]
+changelog_file = "CHANGELOG.md"
+exclude_commit_patterns = ["chore*", "Merge*"]
+
+[tool.semantic_release.branches.main]
+match = "(main|^[a-zA-Z0-9-_.\\/]*$)"

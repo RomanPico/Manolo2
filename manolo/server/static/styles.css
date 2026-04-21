@@ -1,0 +1,94 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #0f1115;
+  color: #e8eaed;
+}
+
+.shell {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 1rem;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.status {
+  opacity: 0.8;
+  font-size: 0.9rem;
+}
+
+.log {
+  flex: 1;
+  overflow: auto;
+  border: 1px solid #2a2f3a;
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #141821;
+}
+
+.msg {
+  margin: 0.5rem 0;
+  white-space: pre-wrap;
+}
+
+.msg.user {
+  color: #9bd0ff;
+}
+
+.msg.assistant {
+  color: #d5f5d5;
+}
+
+.msg.tool {
+  color: #ffd29d;
+  font-size: 0.9rem;
+}
+
+.composer {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+textarea {
+  flex: 1;
+  resize: vertical;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #2a2f3a;
+  background: #0b0d12;
+  color: inherit;
+}
+
+button {
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #2a2f3a;
+  background: #1f2633;
+  color: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
